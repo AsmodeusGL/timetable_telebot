@@ -13,4 +13,4 @@ def start():
     links = hrefs.find_elements(By.TAG_NAME, 'a')
     for el in links:
         arr.append(el.get_attribute('href'))
-    return arr[:3]
+    return arr[:10]
