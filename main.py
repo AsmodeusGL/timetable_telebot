@@ -27,22 +27,31 @@ def start(message):
 def check(callback):
     match callback.data:
         case 'Автобус':
-            w = bot.send_message(callback.message.chat.id, 'Введите номер автобуса')
-            bot.register_next_step_handler(w, qwer)
+            var_1 = bot.send_message(callback.message.chat.id, 'Введите номер автобуса')
+            bot.register_next_step_handler(var_1, bus)
         case 'Троллейбус':
-            w = bot.send_message(callback.message.chat.id, 'Введите номер троллейбуса')
-            bot.register_next_step_handler(w, qwer)
+            var_2 = bot.send_message(callback.message.chat.id, 'Введите номер троллейбуса')
+            bot.register_next_step_handler(var_2, trolleybus)
         case 'Трамвай':
-            w = bot.send_message(callback.message.chat.id, 'Введите номер трамвая')
-            bot.register_next_step_handler(w, qwer)
+            var_3 = bot.send_message(callback.message.chat.id, 'Введите номер трамвая')
+            bot.register_next_step_handler(var_3, tram)
         case 'Метро':
             w = bot.send_message(callback.message.chat.id, 'Введите цвет линии метро')
-            bot.register_next_step_handler(w, qwer)
+            bot.register_next_step_handler(w, bus)
 
 
-def qwer(message):
-    x = parse.start()
-    bot.send_message(message.chat.id, f'{x[int(message.text) - 1]}')
+def bus(message):
+    arr = [item for item in parse.start_bus() if message.text in item.split('/')[4][0]]
+    print(arr)
+    bot.send_message(message.chat.id, f'{parse.start_bus()[int(message.text) - 1]}')
+
+
+def trolleybus(message):
+    bot.send_message(message.chat.id, f'{parse.start_trolleybus()[int(message.text) - 1]}')
+
+
+def tram(message):
+    bot.send_message(message.chat.id, f'{parse.start_tram()[int(message.text) - 1]}')
 
 
 bot.polling()
