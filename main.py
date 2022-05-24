@@ -1,8 +1,8 @@
 import name_token
 import parse
-
 import telebot
 from telebot import types
+from urllib.parse import *
 
 bot = telebot.TeleBot(name_token.name)
 
@@ -41,9 +41,15 @@ def check(callback):
 
 
 def bus(message):
-    arr = [item for item in parse.start_bus() if message.text in item.split('/')[4][0]]
-    print(arr)
-    bot.send_message(message.chat.id, f'{parse.start_bus()[int(message.text) - 1]}')
+    numbers_ = [item.split('/')[4] for item in parse.start_bus()]
+    format_ = []
+    if message.text in [el.partition('%')[0] for el in numbers_]:
+        for value, number in enumerate(numbers_):
+            if message.text == number.partition('%')[0]:
+                format_.append(parse.start_bus()[value])
+                bot.send_message(message.chat.id, f'{parse.start_bus()[value]}')
+    else:
+        bot.send_message(message.chat.id, 'Данного автобуса не существует')
 
 
 def trolleybus(message):
