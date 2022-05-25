@@ -5,6 +5,7 @@ from telebot import types
 from urllib.parse import *
 
 bot = telebot.TeleBot(name_token.name)
+links = []
 
 
 @bot.message_handler(commands=['start'])
@@ -38,16 +39,26 @@ def check(callback):
         case 'Метро':
             w = bot.send_message(callback.message.chat.id, 'Введите цвет линии метро')
             bot.register_next_step_handler(w, bus)
+    for link in links:
+        if callback.data == link.split("/")[4]:
+            bot.send_message(callback.message.chat.id, f'{link}')
 
 
 def bus(message):
     numbers_ = [item.split('/')[4] for item in parse.start_bus()]
-    format_ = []
+    dict_ = {}
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
+
     if message.text in [el.partition('%')[0] for el in numbers_]:
         for value, number in enumerate(numbers_):
             if message.text == number.partition('%')[0]:
-                format_.append(parse.start_bus()[value])
-                bot.send_message(message.chat.id, f'{parse.start_bus()[value]}')
+                links.append(parse.start_bus()[value])
+        for num, link in enumerate(links):
+            dict_[f'avtobus{num}'] = f'{unquote(link.split("/")[4])}'
+        for key, value in dict_.items():
+            key = types.InlineKeyboardButton(text=f'{value}', callback_data=f'{value}')
+            keyboard.add(key)
+        bot.send_message(message.chat.id, 'Выберете', reply_markup=keyboard)
     else:
         bot.send_message(message.chat.id, 'Данного автобуса не существует')
 
