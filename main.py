@@ -33,34 +33,30 @@ def check_keyboard_callback(callback_query: types.CallbackQuery):
     match callback_query.data:
         case 'btn_bus':
             message_ = bot.send_message(callback_query.message.chat.id, 'Введите номер автобуса')
-            bot.register_next_step_handler(message_, bus, 'https://minsk.btrans.by/avtobus')
+            bot.register_next_step_handler(message_, transport_numbers, 'https://minsk.btrans.by/avtobus')
         case 'btn_trolleybus':
             message_ = bot.send_message(callback_query.message.chat.id, 'Введите номер троллейбуса')
-            bot.register_next_step_handler(message_, bus, 'https://minsk.btrans.by/trollejbus')
+            bot.register_next_step_handler(message_, transport_numbers, 'https://minsk.btrans.by/trollejbus')
         case 'btn_tram':
             message_ = bot.send_message(callback_query.message.chat.id, 'Введите номер трамвая')
-            bot.register_next_step_handler(message_, bus, 'https://minsk.btrans.by/tramvaj')
+            bot.register_next_step_handler(message_, transport_numbers, 'https://minsk.btrans.by/tramvaj')
 
 
-def bus(message, url):
-    numbers_ = [item.split('/')[4] for item in parse.start_bus(url)]
-    dict_ = {}
-    links = []
+@bot.callback_query_handler(func=lambda callback: callback.data.startswith('https'))
+def check_route(callback_query: types.CallbackQuery):
+    bot.send_message(callback_query.message.chat.id, parse.routes(callback_query.data))
+
+
+def transport_numbers(message, url):
+    numbers_ = {value: item.split('/')[4] for value, item in enumerate(parse.parse_numbers(url)) if message.text == item.split('/')[4].partition('%')[0]}
     keyboard = types.InlineKeyboardMarkup(row_width=1)
-
-    if message.text in [el.partition('%')[0] for el in numbers_]:
-        for value, number in enumerate(numbers_):
-            if message.text == number.partition('%')[0]:
-                links.append(parse.start_bus(url)[value])
-        for num, link in enumerate(links):
-            dict_[f'avtobus{num}'] = f'{unquote(link.split("/")[4])}'
-        for key, value in dict_.items():
-            key = types.InlineKeyboardButton(text=f'{value}', callback_data=f'{value}')
+    if numbers_:
+        for number, value in numbers_.items():
+            key = types.InlineKeyboardButton(text=f'{unquote(value)}', callback_data=f'{parse.parse_numbers(url)[number]}')
             keyboard.add(key)
         bot.send_message(message.chat.id, 'Выберите', reply_markup=keyboard)
     else:
-        bot.send_message(message.chat.id, 'Данного автобуса не существует')
-    return links
+        bot.send_message(message.chat.id, 'Данного номера не существует')
 
 
 bot.polling()
