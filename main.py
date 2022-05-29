@@ -42,17 +42,22 @@ def check_keyboard_callback(callback_query: types.CallbackQuery):
             bot.register_next_step_handler(message_, transport_numbers, 'https://minsk.btrans.by/tramvaj')
 
 
-@bot.callback_query_handler(func=lambda callback: callback.data.startswith('https'))
+@bot.callback_query_handler(func=lambda callback: callback.data)
 def check_route(callback_query: types.CallbackQuery):
-    keyboard = types.InlineKeyboardMarkup(row_width=1)
-    for number, key in enumerate(parse.routes(callback_query.data)):
-        # for number, el in enumerate(value):
-        #     button = types.InlineKeyboardButton(text=el.split('\n')[3] + '\t' + el.split('\n')[2], callback_data=f'stop_{number}')
-        #     keyboard.add(button)
-        # bot.send_message(callback_query.message.chat.id, key, reply_markup=keyboard)
-        button = types.InlineKeyboardButton(text=key, callback_data=f'way_{number}')
-        keyboard.add(button)
-    bot.send_message(callback_query.message.chat.id, 'Выберите направление', reply_markup=keyboard)
+    if callback_query.data.startswith('https'):
+        keyboard = types.InlineKeyboardMarkup(row_width=1)
+        for number, (key, value) in enumerate(parse.routes(callback_query.data).items()):
+            button = types.InlineKeyboardButton(text=key, callback_data=f'{number}{callback_query.data}')
+            keyboard.add(button)
+        bot.send_message(callback_query.message.chat.id, 'Выберите направление', reply_markup=keyboard)
+    else:
+        keyboard = types.InlineKeyboardMarkup(row_width=1)
+        for number, (key, value) in enumerate(parse.routes(callback_query.data[1:]).items()):
+            for key_1, value_1 in value.items():
+                if str(number) == callback_query.data[0]:
+                    button = types.InlineKeyboardButton(text=key_1, callback_data=f'{number}{callback_query.data}')
+                    keyboard.add(button)
+        bot.send_message(callback_query.message.chat.id, 'Выберите остановку', reply_markup=keyboard)
 
 
 def transport_numbers(message, url):
