@@ -45,11 +45,14 @@ def check_keyboard_callback(callback_query: types.CallbackQuery):
 @bot.callback_query_handler(func=lambda callback: callback.data.startswith('https'))
 def check_route(callback_query: types.CallbackQuery):
     keyboard = types.InlineKeyboardMarkup(row_width=1)
-    for key, value in parse.routes(callback_query.data).items():
-        for number, el in enumerate(value):
-            button = types.InlineKeyboardButton(text=el.split('\n')[3] + '\t' + el.split('\n')[2], callback_data=f'stop_{number}')
-            keyboard.add(button)
-        bot.send_message(callback_query.message.chat.id, key, reply_markup=keyboard)
+    for number, key in enumerate(parse.routes(callback_query.data)):
+        # for number, el in enumerate(value):
+        #     button = types.InlineKeyboardButton(text=el.split('\n')[3] + '\t' + el.split('\n')[2], callback_data=f'stop_{number}')
+        #     keyboard.add(button)
+        # bot.send_message(callback_query.message.chat.id, key, reply_markup=keyboard)
+        button = types.InlineKeyboardButton(text=key, callback_data=f'way_{number}')
+        keyboard.add(button)
+    bot.send_message(callback_query.message.chat.id, 'Выберите направление', reply_markup=keyboard)
 
 
 def transport_numbers(message, url):

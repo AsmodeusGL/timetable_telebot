@@ -24,7 +24,8 @@ def routes(url):
     chrome_options.add_argument("--headless")
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
-    time.sleep(2)
-    for number in range(2):
-        dictionary[driver.find_elements(By.CLASS_NAME, 'direction')[number].find_element(By.TAG_NAME, 'h2').text] = [item.text for item in driver.find_elements(By.CLASS_NAME, 'stops')[number].find_elements(By.CLASS_NAME, 'stop')]
+    time.sleep(1)
+    for number in range(len(driver.find_elements(By.CLASS_NAME, 'direction'))):
+        dictionary[driver.find_elements(By.CLASS_NAME, 'direction')[number].find_element(By.TAG_NAME, 'h2').text] = {item.text: item.get_attribute('href') for item in driver.find_elements(By.CLASS_NAME, 'stops')[number].find_elements(By.TAG_NAME, 'a')}
+    print(dictionary)
     return dictionary
