@@ -1,10 +1,16 @@
 import name_token
 import parse
 import telebot
+import os
+import logging
 from telebot import types
 from urllib.parse import *
+from flask import Flask
 
 bot = telebot.TeleBot(name_token.name)
+server = Flask(__name__)
+logger = telebot.logger
+logger.setLevel(logging.DEBUG)
 
 
 def get_keyboard():
@@ -80,4 +86,7 @@ def transport_numbers(message, url):
         bot.send_message(message.chat.id, 'Данного номера не существует')
 
 
-bot.polling()
+if __name__ == '__main__':
+    bot.remove_webhook()
+    bot.set_webhook(url=name_token.heroku_url + name_token.name)
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
