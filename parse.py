@@ -28,3 +28,13 @@ def routes(url):
     for number in range(len(driver.find_elements(By.CLASS_NAME, 'direction'))):
         dictionary[driver.find_elements(By.CLASS_NAME, 'direction')[number].find_element(By.TAG_NAME, 'h2').text] = {item.text: item.get_attribute('href') for item in driver.find_elements(By.CLASS_NAME, 'stops')[number].find_elements(By.TAG_NAME, 'a')}
     return dictionary
+
+
+def timetable(url):
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    driver = webdriver.Chrome(options=chrome_options)
+    driver.get(url.split('_')[3])
+    new_url = driver.find_elements(By.CLASS_NAME, 'stops')[int(url.split('_')[1])].find_elements(By.CLASS_NAME, 'stop')[int(url.split('_')[2])].find_element(By.TAG_NAME, 'a').get_attribute('href')
+    driver.get(new_url)
+    return {driver.find_element(By.CLASS_NAME, 'heading').text: [item.text for item in driver.find_elements(By.CLASS_NAME, 'timetable-ceil')]}

@@ -50,14 +50,22 @@ def check_route(callback_query: types.CallbackQuery):
             button = types.InlineKeyboardButton(text=key, callback_data=f'{number}{callback_query.data}')
             keyboard.add(button)
         bot.send_message(callback_query.message.chat.id, 'Выберите направление', reply_markup=keyboard)
+    elif callback_query.data.startswith('number_'):
+        for key, value in parse.timetable(callback_query.data).items():
+            bot.send_message(callback_query.message.chat.id, key)
+            for el in value[1:]:
+                bot.send_message(callback_query.message.chat.id, el)
     else:
-        keyboard = types.InlineKeyboardMarkup(row_width=1)
-        for number, (key, value) in enumerate(parse.routes(callback_query.data[1:]).items()):
-            for key_1, value_1 in value.items():
-                if str(number) == callback_query.data[0]:
-                    button = types.InlineKeyboardButton(text=key_1, callback_data=f'{number}{callback_query.data}')
-                    keyboard.add(button)
-        bot.send_message(callback_query.message.chat.id, 'Выберите остановку', reply_markup=keyboard)
+        try:
+            keyboard = types.InlineKeyboardMarkup(row_width=1)
+            for number, (key, value) in enumerate(parse.routes(callback_query.data[1:]).items()):
+                for number_1, (key_1, value_1) in enumerate(value.items()):
+                    if str(number) == callback_query.data[0]:
+                        button = types.InlineKeyboardButton(text=key_1.split('\n')[3] + '\t' + key_1.split('\n')[2], callback_data=f'number_{number}_{number_1}_{callback_query.data[1:]}')
+                        keyboard.add(button)
+            bot.send_message(callback_query.message.chat.id, 'Выберите остановку', reply_markup=keyboard)
+        except IndexError:
+            bot.send_message(callback_query.message.chat.id, 'Расписаний на данный маршрут не существует!')
 
 
 def transport_numbers(message, url):
