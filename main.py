@@ -5,7 +5,7 @@ import os
 import logging
 from telebot import types
 from urllib.parse import *
-from flask import Flask
+from flask import Flask, request
 
 bot = telebot.TeleBot(name_token.name)
 server = Flask(__name__)
@@ -72,6 +72,14 @@ def check_route(callback_query: types.CallbackQuery):
             bot.send_message(callback_query.message.chat.id, 'Выберите остановку', reply_markup=keyboard)
         except IndexError:
             bot.send_message(callback_query.message.chat.id, 'Расписаний на данный маршрут не существует!')
+
+
+@server.route(f'/{name_token.name}', methods=['POST'])
+def redirect_message():
+    json_string = request.get_data().decode('utf-8')
+    update = telebot.types.Update.de_json(json_string)
+    bot.process_new_updates([update])
+    return '!', 200
 
 
 def transport_numbers(message, url):
