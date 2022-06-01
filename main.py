@@ -5,10 +5,8 @@ import os
 import logging
 from telebot import types
 from urllib.parse import *
-from flask import Flask, request
 
 bot = telebot.TeleBot(name_token.name)
-server = Flask(__name__)
 logger = telebot.logger
 logger.setLevel(logging.DEBUG)
 
@@ -74,14 +72,6 @@ def check_route(callback_query: types.CallbackQuery):
             bot.send_message(callback_query.message.chat.id, 'Расписаний на данный маршрут не существует!')
 
 
-@server.route(f'/{name_token.name}', methods=['POST'])
-def redirect_message():
-    json_string = request.get_data().decode('utf-8')
-    update = telebot.types.Update.de_json(json_string)
-    bot.process_new_updates([update])
-    return '!', 200
-
-
 def transport_numbers(message, url):
     numbers_ = {value: item.split('/')[4] for value, item in enumerate(parse.parse_numbers(url)) if message.text == item.split('/')[4].partition('%')[0]}
     keyboard = types.InlineKeyboardMarkup(row_width=1)
@@ -95,4 +85,4 @@ def transport_numbers(message, url):
 
 
 if __name__ == '__main__':
-    bot.polling()
+    bot.polling(timeout=60)
