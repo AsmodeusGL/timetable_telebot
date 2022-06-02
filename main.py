@@ -1,13 +1,12 @@
-import name_token
 import parse
 import telebot
 import os
 import logging
 from urllib.parse import *
 
-bot = telebot.TeleBot(name_token.name)
-# logger = telebot.logger
-# logger.setLevel(logging.DEBUG)
+bot = telebot.TeleBot(os.getenv('token'))
+logger = telebot.logger
+logger.setLevel(logging.DEBUG)
 
 
 def get_keyboard():
