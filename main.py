@@ -23,11 +23,16 @@ def get_keyboard():
 @bot.message_handler(commands=['start'])
 @bot.message_handler(func=lambda message: message.text.isalpha())
 def start(message):
-    if message.text.lower() == 'расписание':
-        bot.send_message(message.chat.id, 'Выберете тип транспорта', reply_markup=get_keyboard())
-    else:
-        bot.send_message(message.chat.id, 'Данный бот предназначен для получения информации расписания'
-                                          ' маршрутного транспортного средства. Введите "Расписание"')
+    match message.text.lower():
+        case 'расписание':
+            bot.send_message(message.chat.id, 'Выберите тип транспорта', reply_markup=get_keyboard())
+        case '/start':
+            keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+            keyboard.add(telebot.types.KeyboardButton(text='Расписание'))
+            bot.send_message(message.chat.id, 'Нажмите на кнопку "Расписание"', reply_markup=keyboard)
+        case _:
+            bot.send_message(message.chat.id, 'Данный бот предназначен для получения информации расписания'
+                                              ' маршрутного транспортного средства. Введите "Расписание"')
 
 
 @bot.callback_query_handler(func=lambda callback: callback.data.startswith('btn_'))
@@ -35,7 +40,7 @@ def check_keyboard_callback(callback_query: telebot.types.CallbackQuery):
     match callback_query.data:
         case 'btn_bus':
             message_ = bot.send_message(callback_query.message.chat.id, 'Введите номер автобуса')
-            bot.register_next_step_handler(message_, transport_numbers, 'https://minsk.btrans.by/avtobus/')
+            bot.register_next_step_handler(message_, transport_numbers, 'https://minsk.btrans.by/avtobus')
         case 'btn_trolleybus':
             message_ = bot.send_message(callback_query.message.chat.id, 'Введите номер троллейбуса')
             bot.register_next_step_handler(message_, transport_numbers, 'https://minsk.btrans.by/trollejbus')
@@ -55,8 +60,10 @@ def check_route(callback_query: telebot.types.CallbackQuery):
     elif callback_query.data.startswith('number_'):
         for key, value in parse.timetable(callback_query.data).items():
             bot.send_message(callback_query.message.chat.id, key)
-            for el in value[1:]:
-                bot.send_message(callback_query.message.chat.id, el)
+            for hour in value[1:]:
+                for item in [item for item in value[0].split('-')][1:]:
+                    hour = hour.replace(item, '\n' + item + '\t')
+                bot.send_message(callback_query.message.chat.id, hour)
     else:
         try:
             keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)

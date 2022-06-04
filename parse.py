@@ -5,7 +5,7 @@ headers = {'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWe
 
 
 def parse_numbers(url):
-    response = requests.get(url, headers=headers, allow_redirects=True)
+    response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.text, 'lxml')
     return ['https://minsk.btrans.by' + item.find('a').get('href') for item in soup.find_all('li', class_='hexagon')]
 
